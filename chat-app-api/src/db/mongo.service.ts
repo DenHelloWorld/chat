@@ -1,6 +1,7 @@
 import mongoose, { Model, Document } from 'mongoose';
 import { MongoErrorHandler } from '../utils/error-handlers';
-import { MongoResponse } from '../interfaces';
+import { MongoResponse } from './mongo.interfaces';
+import 'dotenv/config';
 
 class MongoService {
   private readonly uri: string;
@@ -108,6 +109,22 @@ class MongoService {
       return { message: 'Failed to delete document', payload: null };
     }
   }
-}
 
-export default MongoService;
+  public async testConnection(): Promise<boolean> {
+    try {
+      if (mongoose.connection.db) {
+        await mongoose.connection.db.admin().ping();
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('MongoDB connection test failed:', error);
+      return false;
+    }
+  }
+}
+const uri = `mongodb+srv://${process.env.MONGO_ATLAS_USERNAME}:${process.env.MONGO_ATLAS_PASSWORD}@cluster0.kewo1.mongodb.net/?retryWrites=true&w=majority&appName=Cluster`;
+
+const mongoService = new MongoService(uri);
+
+export default mongoService;
