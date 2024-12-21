@@ -1,7 +1,7 @@
 import mongoose, { Model, Document } from 'mongoose';
 import { MongoErrorHandler } from '../utils/error-handlers';
 import { MongoResponse } from './mongo.interfaces';
-import 'dotenv/config';
+import { MONGO_URI } from './mongo.constants';
 
 class MongoService {
   private readonly uri: string;
@@ -123,8 +123,7 @@ class MongoService {
     }
   }
 }
-const uri = `mongodb+srv://${process.env.MONGO_ATLAS_USERNAME}:${process.env.MONGO_ATLAS_PASSWORD}@cluster0.kewo1.mongodb.net/?retryWrites=true&w=majority&appName=Cluster`;
 
-const mongoService = new MongoService(uri);
+const mongoService = new MongoService(MONGO_URI);
 
 export default mongoService;
