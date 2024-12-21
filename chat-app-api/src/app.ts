@@ -1,37 +1,46 @@
 import express, { Application, Request, Response } from 'express';
 import { createServer } from 'node:http';
-import WebSocket from 'ws';
 import mongoService from './db/mongo.service';
+import { WebSocketService } from './ws/ws.service';
+import { Server as HttpServer } from 'node:http';
+import 'dotenv/config';
 
-const app: Application = express();
-const server = createServer(app);
-const wss = new WebSocket.Server({ server });
-const port = 3000;
+class App {
+  private app: Application = express();
+  private server: HttpServer = createServer(this.app);
+  private wsService: WebSocketService = new WebSocketService(this.server);
+  private port = process.env.API_PORT;
 
-app.use(express.json());
-
-app.use('/health', async (req: Request, res: Response) => {
-  const isConnected = await mongoService.testConnection();
-
-  if (isConnected) {
-    res.status(200).send('MongoDB connection is successful');
-  } else {
-    res.status(500).send('MongoDB connection failed');
+  constructor() {
+    this.setupRoutes();
   }
-});
 
-wss.on('connection', (ws: WebSocket) => {
-  console.log('a user connected');
+  private setupRoutes() {
+    this.app.use(express.json());
 
-  ws.on('message', (message) => {
-    console.log('received: %s', message);
-  });
+    this.app.use('/health', async (req: Request, res: Response) => {
+      const isConnected = await mongoService.testConnection();
 
-  ws.on('close', () => {
-    console.log('user disconnected');
-  });
-});
+      if (isConnected) {
+        res.status(200).send('MongoDB connection is successful');
+      } else {
+        res.status(500).send('MongoDB connection failed');
+      }
+    });
 
-server.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
-});
+    this.app.post('/broadcast-message', (req: Request, res: Response) => {
+      const message = req.body.message;
+      this.wsService.broadcast(message);
+      res.status(200).send('Message sent');
+    });
+  }
+
+  public start() {
+    this.server.listen(this.port, () => {
+      console.log(`Server is running on http://localhost:${this.port}`);
+    });
+  }
+}
+
+const app = new App();
+app.start();
