@@ -1,7 +1,6 @@
 import express, { Application } from 'express';
-import { createServer } from 'node:http';
+import { createServer, Server as HttpServer } from 'node:http';
 import { WebSocketService } from './ws/ws.service';
-import { Server as HttpServer } from 'node:http';
 import chatRoutes from './routes/chat.routes';
 import 'dotenv/config';
 

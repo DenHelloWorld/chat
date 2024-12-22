@@ -22,3 +22,9 @@ export class MongoErrorHandler extends ErrorHandler {
     }
   }
 }
+
+export class QuotableErrorHandler extends ErrorHandler {
+  handleError(error: unknown): void {
+    this.logError('Quotable error occurred: ' + error);
+  }
+}
